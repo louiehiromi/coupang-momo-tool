@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coupang × momo 配貨計算器</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f4f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #1a1a1a;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 0.5px solid #e0ddd5;
+    padding: 2rem;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: #888780;
+    margin-bottom: 2rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888780;
+    margin-bottom: 10px;
+  }
+
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .brand-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .dot-momo { background: #D85A30; }
+  .dot-cp { background: #378ADD; }
+
+  .input-hint {
+    font-size: 12px;
+    color: #b4b2a9;
+  }
+
+  input[type=number] {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  input[type=number]:focus { border-color: #888780; }
+
+  .full-width { grid-template-columns: 1fr; }
+
+  .divider {
+    border: none;
+    border-top: 0.5px solid #e8e6df;
+    margin: 1.5rem 0;
+  }
+
+  .growth-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.5rem;
+  }
+
+  .growth-row label {
+    font-size: 13px;
+    color: #5f5e5a;
+    white-space: nowrap;
+  }
+
+  input[type=range] {
+    flex: 1;
+    height: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #e0ddd5;
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #d3d1c7;
+  }
+
+  .growth-val {
+    min-width: 64px;
+    text-align: right;
+  }
+
+  .growth-val .gv-main {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .growth-val .gv-sub {
+    font-size: 11px;
+    color: #888780;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .result-card {
+    background: #f5f4f0;
+    border-radius: 10px;
+    padding: 14px 12px;
+  }
+
+  .r-label {
+    font-size: 12px;
+    color: #888780;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .r-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
+
+  .r-sub {
+    font-size: 11px;
+    color: #b4b2a9;
+    margin-top: 4px;
+  }
+
+  .bar-wrap { margin-bottom: 1.25rem; }
+
+  .bar-track {
+    height: 8px;
+    border-radius: 99px;
+    background: #e8e6df;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .bar-momo {
+    background: #D85A30;
+    transition: width 0.3s ease;
+  }
+
+  .bar-cp {
+    background: #378ADD;
+    transition: width 0.3s ease;
+  }
+
+  .bar-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888780;
+  }
+
+  .bar-legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dot-unused {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d3d1c7;
+    display: inline-block;
+  }
+
+  .alert {
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 0.5px solid;
+    margin-bottom: 1.25rem;
+  }
+
+  .alert-ok {
+    background: #eaf3de;
+    color: #27500a;
+    border-color: #97c459;
+  }
+
+  .alert-warn {
+    background: #faeeda;
+    color: #633806;
+    border-color: #ef9f27;
+  }
+
+  .footer {
+    font-size: 11px;
+    color: #b4b2a9;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="page-title">配貨計算器</div>
+  <div class="page-sub">momo 維穩 × Coupang 成長策略</div>
+
+  <div class="section-label">去年同期銷量（件／週）</div>
+  <div class="input-grid">
+    <div class="input-group">
+      <div class="brand-label"><span class="dot dot-momo"></span>momo</div>
+      <div class="input-hint">去年同期週銷量</div>
+      <input type="number" id="momo-last" value="500" min="0" oninput="calc()">
+    </div>
+    <div class="input-group">
+      <div class="brand-label"><span class="dot dot-cp"></span>Coupang 酷澎</div>
+      <div class="input-hint">去年同期週銷量</div>
+      <input type="number" id="cp-last" value="200" min="0" oninput="calc()">
+    </div>
+  </div>
+
+  <div class="section-label">本週總可配貨量（件）</div>
+  <div class="input-grid full-width" style="margin-bottom: 1.5rem;">
+    <div class="input-group">
+      <div class="input-hint">這週實際可分配的庫存數量</div>
+      <input type="number" id="total-stock" value="800" min="0" oninput="calc()">
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Coupang 成長目標</div>
+  <div class="growth-row">
+    <label>成長係數</label>
+    <input type="range" id="growth" min="1.0" max="2.0" step="0.05" value="1.2" oninput="calc()">
+    <div class="growth-val">
+      <div class="gv-main" id="gv-main">× 1.20</div>
+      <div class="gv-sub" id="gv-sub">成長 20%</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="alert-box"></div>
+
+  <div class="section-label">本週配貨建議</div>
+  <div class="result-grid">
+    <div class="result-card">
+      <div class="r-label"><span class="dot dot-momo"></span>momo</div>
+      <div class="r-value" id="res-momo">—</div>
+      <div class="r-sub" id="sub-momo">件</div>
+    </div>
+    <div class="result-card">
+      <div class="r-label"><span class="dot dot-cp"></span>Coupang</div>
+      <div class="r-value" id="res-cp">—</div>
+      <div class="r-sub" id="sub-cp">件</div>
+    </div>
+    <div class="result-card">
+      <div class="r-label"><span class="dot-unused"></span>留倉</div>
+      <div class="r-value" id="res-rem">—</div>
+      <div class="r-sub">件未分配</div>
+    </div>
+  </div>
+
+  <div class="bar-wrap">
+    <div class="bar-track">
+      <div class="bar-momo" id="bar-momo" style="width:0%"></div>
+      <div class="bar-cp" id="bar-cp" style="width:0%"></div>
+    </div>
+    <div class="bar-legend">
+      <span><span class="dot dot-momo"></span>momo <span id="pct-momo">—</span></span>
+      <span><span class="dot dot-cp"></span>Coupang <span id="pct-cp">—</span></span>
+      <span><span class="dot-unused"></span>留倉 <span id="pct-rem">—</span></span>
+    </div>
+  </div>
+
+  <div class="footer">每週更新去年同期數字 · 成長係數可依促銷檔期彈性調整</div>
+</div>
+
+<script>
+function calc() {
+  var momoLast = Math.max(0, parseInt(document.getElementById('momo-last').value) || 0);
+  var cpLast = Math.max(0, parseInt(document.getElementById('cp-last').value) || 0);
+  var total = Math.max(0, parseInt(document.getElementById('total-stock').value) || 0);
+  var growth = parseFloat(document.getElementById('growth').value);
+
+  var pct = Math.round((growth - 1) * 100);
+  document.getElementById('gv-main').textContent = '× ' + growth.toFixed(2);
+  document.getElementById('gv-sub').textContent = '成長 ' + pct + '%';
+
+  var momoTarget = momoLast;
+  var cpTarget = Math.round(cpLast * growth);
+  var needed = momoTarget + cpTarget;
+
+  var momoAlloc, cpAlloc, remainder, alertHtml, alertClass;
+
+  if (total >= needed) {
+    momoAlloc = momoTarget;
+    cpAlloc = cpTarget;
+    remainder = total - needed;
+    alertClass = 'alert-ok';
+    alertHtml = '✓ 貨量充足。momo 維穩、Coupang 達成成長目標，尚有 <strong>' + remainder.toLocaleString() + ' 件</strong>留倉備用。';
+  } else if (total >= momoTarget) {
+    momoAlloc = momoTarget;
+    cpAlloc = total - momoTarget;
+    remainder = 0;
+    var cpShort = cpTarget - cpAlloc;
+    var actualGrowth = cpLast > 0 ? Math.round((cpAlloc / cpLast - 1) * 100) : 0;
+    alertClass = 'alert-warn';
+    alertHtml = '⚠ 貨量不足，已先保 momo 維穩。Coupang 缺口 <strong>' + cpShort.toLocaleString() + ' 件</strong>，本週實際僅能成長 ' + actualGrowth + '%。';
+  } else {
+    momoAlloc = total;
+    cpAlloc = 0;
+    remainder = 0;
+    alertClass = 'alert-warn';
+    alertHtml = '⚠ 貨量嚴重不足（需 ' + needed.toLocaleString() + ' 件，僅有 ' + total.toLocaleString() + ' 件）。建議全數優先給 momo，Coupang 本週暫停配貨。';
+  }
+
+  document.getElementById('res-momo').textContent = momoAlloc.toLocaleString();
+  document.getElementById('res-cp').textContent = cpAlloc.toLocaleString();
+  document.getElementById('res-rem').textContent = remainder.toLocaleString();
+  document.getElementById('sub-momo').textContent = '目標 ' + momoTarget.toLocaleString() + ' 件';
+  document.getElementById('sub-cp').textContent = '目標 ' + cpTarget.toLocaleString() + ' 件';
+
+  var barMomoPct = total > 0 ? Math.round(momoAlloc / total * 100) : 0;
+  var barCpPct = total > 0 ? Math.round(cpAlloc / total * 100) : 0;
+  var remPct = 100 - barMomoPct - barCpPct;
+
+  document.getElementById('bar-momo').style.width = barMomoPct + '%';
+  document.getElementById('bar-cp').style.width = barCpPct + '%';
+  document.getElementById('pct-momo').textContent = barMomoPct + '%';
+  document.getElementById('pct-cp').textContent = barCpPct + '%';
+  document.getElementById('pct-rem').textContent = remPct + '%';
+
+  document.getElementById('alert-box').innerHTML = '<div class="alert ' + alertClass + '">' + alertHtml + '</div>';
+}
+
+calc();
+</script>
+</body>
+</html>
