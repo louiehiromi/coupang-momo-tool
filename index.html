@@ -71,16 +71,16 @@
 
   .input-hint { font-size: 12px; color: #b4b2a9; }
 
-  input[type=number] {
+  input[type=number], input[type=text] {
     width: 100%; padding: 9px 12px; font-size: 15px; font-family: inherit;
     border: 0.5px solid #d3d1c7; border-radius: 8px; background: #ffffff;
     color: #1a1a1a; outline: none; transition: border-color 0.15s;
-    -moz-appearance: textfield;
   }
 
+  input[type=number] { -moz-appearance: textfield; }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-  input[type=number]:focus { border-color: #888780; }
+  input[type=number]:focus, input[type=text]:focus { border-color: #888780; }
 
   .divider { border: none; border-top: 0.5px solid #e8e6df; margin: 1.5rem 0; }
 
@@ -123,6 +123,7 @@
   .ref-card .r-sub { font-size: 11px; color: #b4b2a9; margin-top: 2px; }
 
   .order-section { margin-bottom: 1.5rem; }
+
   .order-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .order-input-row label { font-size: 13px; color: #5f5e5a; white-space: nowrap; min-width: 140px; }
   .order-input-row .unit { font-size: 13px; color: #888780; }
@@ -136,6 +137,18 @@
   .verdict-accept { background: #eaf3de; color: #27500a; border-color: #97c459; }
   .verdict-reject { background: #fcebeb; color: #501313; border-color: #e24b4a; }
   .verdict-neutral { background: #f5f4f0; color: #5f5e5a; border-color: #d3d1c7; }
+
+  .item-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 1.5rem;
+  }
+
+  .item-row label {
+    font-size: 13px;
+    color: #5f5e5a;
+  }
 
   .notion-btn {
     width: 100%; padding: 12px; font-size: 14px; font-weight: 500; font-family: inherit;
@@ -168,6 +181,12 @@
       <div class="page-sub">這個月最多可以接多少 Coupang 訂單</div>
     </div>
     <button class="clear-btn" onclick="clearAll()">清除所有數字</button>
+  </div>
+
+  <div class="section-label">品項</div>
+  <div class="item-row">
+    <label>品項名稱</label>
+    <input type="text" id="item-name" placeholder="例如：LM、W200" oninput="calc()">
   </div>
 
   <div class="section-label">去年同月銷量（件）</div>
@@ -251,6 +270,7 @@ var MAKE_WEBHOOK = 'https://hook.us2.make.com/l6yg5ylg9iq6erxsx7rvv3d7lmktkksp';
 var currentCeiling = 0;
 
 function clearAll() {
+  document.getElementById('item-name').value = '';
   document.getElementById('momo-last').value = '';
   document.getElementById('cp-last').value = '';
   document.getElementById('order-now').value = '';
@@ -319,6 +339,7 @@ async function saveToNotion() {
     return;
   }
 
+  var itemName = document.getElementById('item-name').value.trim();
   var orderNow = Math.max(0, parseInt(document.getElementById('order-now').value) || 0);
   var today = new Date();
   var dateStr = today.toISOString().split('T')[0];
@@ -334,6 +355,7 @@ async function saveToNotion() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        item: itemName,
         date: dateStr,
         month: monthStr,
         ceiling: currentCeiling,
